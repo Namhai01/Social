@@ -16,15 +16,14 @@ app.use(
     name: "sessionName",
     secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URL,
       dbName: "Session_db",
       stringify: false,
     }),
     cookie: {
-      secure: true,
-      maxAge: 1000,
+      maxAge: 1000 * 60 * 5,
       httpOnly: true,
     },
   })

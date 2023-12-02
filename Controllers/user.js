@@ -1,7 +1,23 @@
 const bcrypt = require("bcrypt");
+const passport = require("../Config/passport_LocalStrategy");
 const User = require("../Models/user");
-
-module.exports.Login = async () => {};
+//AUTHENTICATION
+module.exports.Login = async (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.json({ status: "Error", message: info.message });
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      return res.json({ status: "Success" });
+    });
+  })(req, res, next);
+};
 
 module.exports.Register = async (req, res) => {
   try {
@@ -38,11 +54,27 @@ module.exports.Register = async (req, res) => {
       username: username,
     });
 
-    res.json({ status: "Success", message: "" });
+    res.json({ status: "Success", message: "Bạn đã đăng kí thành công !" });
+  } catch (error) {
+    console.log(error.errmsg);
+    if (error.code === 11000) {
+      res.json({
+        status: "error",
+        Message: "Email đã được sử dụng!",
+      });
+    } else {
+      res
+        .status(500)
+        .json({ status: "error", Message: "Lỗi trong quá trình đăng ký" });
+    }
+  }
+};
+//USER
+module.exports.userInfo = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.session.passport.user });
+    res.status(200).json(user);
   } catch (error) {
     console.log(error.message);
-    res
-      .status(500)
-      .json({ status: "error", Message: "Lỗi trong quá trình đăng ký" });
   }
 };
